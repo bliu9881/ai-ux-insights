@@ -1,4 +1,6 @@
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { Product } from "aws-cdk-lib/aws-servicecatalog";
+import { describe } from "node:test";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -7,11 +9,18 @@ specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
+  Product: a
     .model({
-      content: a.string(),
+      name: a.string().required(),
+      describe: a.string().required(),
+      price: a.integer().required(),
+      image: a.string(),
     })
-    .authorization((allow) => [allow.guest()]),
+    .authorization((allow) => [
+      allow.guest().to(["read"]),
+      allow.authenticated().to(["read"]),
+      allow.group("Admins"),
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -19,7 +28,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'iam',
+    defaultAuthorizationMode: "iam",
   },
 });
 
